@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
 TOKEN = "7610384761:AAESdxBmc8ok6IhlSjYdgBv4EEzuw4D0P2M"
-WEBHOOK_URL = "https://italiano-bot.onrender.com/webhook"  # ← غيّره بعد نشر المشروع
+WEBHOOK_URL = "https://italiano-bot.onrender.com/webhook"  # ← غيّره إذا اتغير الرابط بعد النشر
 
 app = Flask(__name__)
 application = ApplicationBuilder().token(TOKEN).build()
@@ -95,15 +95,8 @@ async def webhook():
     await application.process_update(update)
     return "ok"
 
-# إعداد الـ webhook عند أول تشغيل
-@app.before_first_request
-def setup_webhook():
-    import asyncio
-    asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
-
-# تشغيل السيرفر على Render
+# تشغيل السيرفر على Render مع إعداد الـ webhook
 if __name__ == "__main__":
     import asyncio
     asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
     app.run(host="0.0.0.0", port=10000)
-
