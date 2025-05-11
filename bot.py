@@ -91,6 +91,7 @@ application.add_handler(CallbackQueryHandler(handle_buttons))
 @app.post("/webhook")
 async def webhook():
     data = request.get_json(force=True)
+    print("📩 تم استلام تحديث من تليجرام:", data)  # <-- السطر الجديد
     update = Update.de_json(data, application.bot)
     await application.process_update(update)
     return "ok"
