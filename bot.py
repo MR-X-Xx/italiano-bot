@@ -1,7 +1,12 @@
+from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
 TOKEN = "7610384761:AAESdxBmc8ok6IhlSjYdgBv4EEzuw4D0P2M"
+WEBHOOK_URL = "https://italiano-bot.onrender.com/webhook"  # ← غيّره بعد نشر المشروع
+
+app = Flask(__name__)
+application = ApplicationBuilder().token(TOKEN).build()
 
 # قائمة الدروس
 lessons = [
@@ -17,7 +22,6 @@ lessons = [
     ("📖 الدرس 10", "Che cos’è? = ما هذا؟\nÈ un libro = إنه كتاب")
 ]
 
-# القائمة الرئيسية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("📘 دروس اللغة الإيطالية", callback_data="lessons")],
@@ -36,17 +40,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.callback_query.edit_message_text(welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
 
-# قائمة دروس المستوى A1
 def lessons_menu():
     buttons = [[InlineKeyboardButton(title, callback_data=f"lesson_{i}")] for i, (title, _) in enumerate(lessons)]
     buttons.append([InlineKeyboardButton("🔙 العودة", callback_data="main_menu")])
     return InlineKeyboardMarkup(buttons)
 
-# العودة إلى القائمة الرئيسية
 def main_menu_keyboard():
     return InlineKeyboardMarkup([[InlineKeyboardButton("🏠 العودة إلى القائمة الرئيسية", callback_data="main_menu")]])
 
-# التعامل مع كل الأزرار
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -82,10 +83,24 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode="Markdown", reply_markup=main_menu_keyboard()
         )
 
-# تشغيل البوت
+# تسجيل المعالجات
+application.add_handler(CommandHandler("start", start))
+application.add_handler(CallbackQueryHandler(handle_buttons))
+
+# نقطة استقبال من تليجرام
+@app.post("/webhook")
+async def webhook():
+    data = request.get_json(force=True)
+    update = Update.de_json(data, application.bot)
+    await application.process_update(update)
+    return "ok"
+
+# إعداد الـ webhook عند أول تشغيل
+@app.before_first_request
+def setup_webhook():
+    import asyncio
+    asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
+
+# تشغيل السيرفر على Render
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(handle_buttons))
-    print("✅ البوت شغال... جرب /start")
-    app.run_polling()
+    app.run(port=10000)
