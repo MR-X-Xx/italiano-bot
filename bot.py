@@ -103,4 +103,7 @@ def setup_webhook():
 
 # تشغيل السيرفر على Render
 if __name__ == "__main__":
-    app.run(port=10000)
+    import asyncio
+    asyncio.run(application.bot.set_webhook(WEBHOOK_URL))
+    app.run(host="0.0.0.0", port=10000)
+
