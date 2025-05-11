@@ -20,6 +20,9 @@ The bot includes structured lessons, vocabulary, grammar basics, and downloadabl
 1. Clone this repository
 2. Add your Telegram bot token to `bot.py`
 3. Run the bot locally using:
+```
+python bot.py
+```
 4. Or deploy it to Render (recommended for 24/7 uptime)
 
 ---
